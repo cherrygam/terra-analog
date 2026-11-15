@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERRA-ANALOG // NASA Space Apps 2026: Planetary Analog Intelligence</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Space Grotesk, Inter, and JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        obsidian: '#080A0F',
+                        charcoal: '#10131A',
+                        surface: '#151922',
+                        ink: '#F2F4F8',
+                        muted: '#8A94A6',
+                        mars: '#FF4F1F',
+                        lunar: '#38BDF8',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-obsidian: #080A0F;
+            --bg-charcoal: #10131A;
+            --border-hairline: rgba(255, 255, 255, 0.09);
+            --border-active: rgba(255, 255, 255, 0.24);
+            --accent-mars: #FF4F1F;
+            --accent-lunar: #38BDF8;
+        }
+
+        body {
+            background-color: var(--bg-obsidian);
+            color: #F2F4F8;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+        }
+
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .hairline {
+            border-color: var(--border-hairline);
+        }
+
+        .panel-base {
+            background-color: var(--bg-charcoal);
+            border: 1px solid var(--border-hairline);
+        }
+
+        /* Swiss Industrial Range Input */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.16);
+            outline: none;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #F2F4F8;
+            border: 2px solid #080A0F;
+            border-radius: 1px;
+            cursor: pointer;
+            transition: background-color 0.15s ease, transform 0.15s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #38BDF8;
+            transform: scale(1.15);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            background: #F2F4F8;
+            border: 2px solid #080A0F;
+            border-radius: 1px;
+            cursor: pointer;
+        }
+
+        /* Subtle Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080A0F;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-white selection:text-obsidian overflow-x-hidden">
+
+    <!-- 1. TOP MINIMALIST TELEMETRY HEADER -->
+    <header class="sticky top-0 z-30 bg-obsidian/95 backdrop-blur-sm border-b hairline px-4 lg:px-6 h-14 flex items-center justify-between gap-4">
+        <!-- Brand Mark & Mission ID -->
+        <div class="flex items-center gap-3.5 min-w-0">
+            <!-- Geometric JPL-inspired crosshair logo -->
+            <div class="w-7 h-7 border border-white/25 flex items-center justify-center shrink-0 relative">
+                <div class="w-2.5 h-2.5 bg-mars"></div>
+                <span class="absolute -top-0.5 -left-0.5 w-1 h-1 bg-white"></span>
+                <span class="absolute -bottom-0.5 -right-0.5 w-1 h-1 bg-white"></span>
+            </div>
+            <div class="flex items-baseline gap-3 truncate">
+                <span class="font-display font-bold text-sm sm:text-base tracking-wider uppercase text-ink">
+                    TERRA-ANALOG
+                </span>
+                <span class="hidden md:inline-block text-[11px] font-mono text-muted tracking-widest uppercase">
+                    CHALLENGE-07 // PLANETARY ANALOGS
+                </span>
+            </div>
+        </div>
+
+        <!-- View Mode Switcher -->
+        <nav class="hidden sm:flex items-center border hairline bg-charcoal p-0.5 rounded-sm" aria-label="Primary View Switcher">
+            <button onclick="switchMainView('atlas')" id="nav-atlas" class="view-tab px-3 py-1 text-[11px] font-mono uppercase tracking-wider transition-colors bg-white text-obsidian font-semibold">
+                Atlas View
+            </button>
+            <button onclick="switchMainView('matrix')" id="nav-matrix" class="view-tab px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-muted hover:text-ink transition-colors">
+                Comparative Matrix
+            </button>
+            <button onclick="switchMainView('simulator')" id="nav-simulator" class="view-tab px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-muted hover:text-ink transition-colors">
+                Mission Simulator
+            </button>
+        </nav>
+
+        <!-- Right Status & Data Sources Trigger -->
+        <div class="flex items-center gap-3 shrink-0">
+            <div class="hidden xl:flex items-center gap-2 px-2.5 py-1 border hairline bg-charcoal text-[11px] font-mono text-muted tabular-nums">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span>NASA SPACE APPS 2026 // TELEMETRY NOMINAL</span>
+            </div>
+
+            <button onclick="toggleDataDrawer(true)" class="px-3 py-1.5 border border-white/20 hover:border-white/50 bg-charcoal text-[11px] font-mono uppercase tracking-wider text-ink transition-colors flex items-center gap-2 cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-lunar" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                    <path stroke-linecap="square" d="M4 7v10c0 1.1 3.6 2 8 2s8-.9 8-2V7M4 7c0 1.1 3.6 2 8 2s8-.9 8-2M4 7c0-1.1 3.6-2 8-2s8 .9 8 2m-16 5c0 1.1 3.6 2 8 2s8-.9 8-2"/>
+                </svg>
+                <span>NASA Data Sources</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Secondary Navigation Bar -->
+    <div class="sm:hidden border-b hairline bg-charcoal px-3 py-1.5 flex items-center justify-between gap-1">
+        <button onclick="switchMainView('atlas')" id="mob-atlas" class="flex-1 py-1 text-[10px] font-mono uppercase tracking-wider bg-white text-obsidian font-semibold">Atlas</button>
+        <button onclick="switchMainView('matrix')" id="mob-matrix" class="flex-1 py-1 text-[10px] font-mono uppercase tracking-wider text-muted">Matrix</button>
+        <button onclick="switchMainView('simulator')" id="mob-simulator" class="flex-1 py-1 text-[10px] font-mono uppercase tracking-wider text-muted">Simulator</button>
+    </div>
+
+    <!-- MAIN CONSOLE WORKSPACE -->
+    <div id="view-atlas" class="flex-1 flex flex-col lg:flex-row min-h-[calc(100vh-3.5rem)]">
+        
+        <!-- 2. LEFT NAVIGATION RAIL (280px on Desktop) -->
+        <aside class="w-full lg:w-[280px] shrink-0 border-b lg:border-b-0 lg:border-r hairline bg-charcoal/60 flex flex-col justify-between">
+            <div>
+                <div class="px-4 py-3 border-b hairline flex items-center justify-between">
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-muted">Terrestrial Index</span>
+                    <span class="text-[10px] font-mono text-ink tabular-nums">04 SITES</span>
+                </div>
+
+                <!-- Indexed Site List (01 to 04) -->
+                <div id="site-rail-list" class="divide-y divide-white/[0.07]">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+
+            <!-- Rail Footer Architectural Metadata -->
+            <div class="hidden lg:block p-4 border-t hairline space-y-2.5 text-[11px] font-mono text-muted">
+                <div class="flex justify-between">
+                    <span>PROJECTION</span>
+                    <span class="text-ink">EQUIRECTANGULAR</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>DATUM</span>
+                    <span class="text-ink">WGS-84 // IAU-MARS</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>SIMILARITY MODEL</span>
+                    <span class="text-ink">JPL-ESI v4.2</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 3. CENTER VIEWPORT (Interactive Orbital & Topographic Projection + Split Telemetry) -->
+        <main class="flex-1 min-w-0 flex flex-col bg-obsidian">
+            
+            <!-- Top Projection Control Bar -->
+            <div class="px-4 lg:px-6 py-2.5 border-b hairline flex flex-wrap items-center justify-between gap-2 bg-charcoal/30">
+                <div class="flex items-center gap-3">
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-muted">Orbital Projection</span>
+                    <span class="text-white/20">|</span>
+                    <span id="viewport-site-code" class="text-xs font-mono font-semibold text-ink">SITE 01 // ATACAMA DESERT</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="resetMapProjection()" class="px-2.5 py-1 border hairline hover:border-white/30 bg-charcoal text-[10px] font-mono uppercase tracking-wider text-muted hover:text-ink transition-colors cursor-pointer">
+                        Reset Global View
+                    </button>
+                    <button onclick="focusActiveSite()" class="px-2.5 py-1 border hairline hover:border-white/30 bg-charcoal text-[10px] font-mono uppercase tracking-wider text-ink transition-colors cursor-pointer">
+                        Center Reticle
+                    </button>
+                </div>
+            </div>
+
+            <!-- Interactive HTML5 Canvas World Projection Map -->
+            <div class="relative w-full h-[320px] sm:h-[380px] lg:h-[420px] border-b hairline overflow-hidden bg-[#06080C]" id="canvas-container">
+                <canvas id="orbitalCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+
+                <!-- Top-Left Real-Time Geospatial Overlay -->
+                <div class="absolute top-3 left-3 pointer-events-none bg-obsidian/90 border hairline px-3 py-2 space-y-1">
+                    <div class="text-[9px] font-mono uppercase tracking-widest text-muted">Active Target Coordinates</div>
+                    <div id="overlay-coords" class="text-xs font-mono font-semibold text-ink tabular-nums">24.5000° S, 69.2500° W</div>
+                    <div class="flex items-center gap-3 pt-0.5 text-[10px] font-mono text-muted tabular-nums">
+                        <span id="overlay-elev">ELEV: 2,400m</span>
+                        <span>•</span>
+                        <span id="overlay-solar">SOLAR: 2,580 kWh/m²</span>
+                    </div>
+                </div>
+
+                <!-- Top-Right Regolith Simulant Class Tag -->
+                <div class="absolute top-3 right-3 pointer-events-none bg-obsidian/90 border hairline px-3 py-2 text-right hidden sm:block">
+                    <div class="text-[9px] font-mono uppercase tracking-widest text-muted">Regolith Simulant Class</div>
+                    <div id="overlay-simulant" class="text-xs font-mono text-mars font-medium mt-0.5">MGS-1 // PERCHLORATE-RICH</div>
+                </div>
+
+                <!-- Bottom-Left Legend -->
+                <div class="absolute bottom-3 left-3 pointer-events-none bg-obsidian/85 border hairline px-2.5 py-1.5 flex items-center gap-4 text-[10px] font-mono text-muted">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 bg-mars inline-block"></span> MARS ANALOG
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 bg-lunar inline-block"></span> LUNAR / DUAL ANALOG
+                    </span>
+                </div>
+
+                <!-- Bottom-Right Cursor Graticule Readout -->
+                <div id="cursor-graticule" class="absolute bottom-3 right-3 pointer-events-none bg-obsidian/85 border hairline px-2.5 py-1.5 text-[10px] font-mono text-muted tabular-nums">
+                    CURSOR: 00.00° N, 00.00° E
+                </div>
+            </div>
+
+            <!-- EARTH vs. TARGET PLANET Split Telemetry Readout Card -->
+            <div class="p-4 lg:p-6 flex-1 flex flex-col justify-between space-y-5">
+                <div class="flex flex-wrap items-start justify-between gap-4 border-b hairline pb-4">
+                    <div>
+                        <div class="flex items-center gap-2.5">
+                            <span id="detail-index" class="text-xs font-mono text-muted">01</span>
+                            <h1 id="detail-title" class="font-display text-xl sm:text-2xl font-bold tracking-tight text-ink">
+                                ATACAMA DESERT, CHILE
+                            </h1>
+                            <span id="detail-badge" class="px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider border border-mars/40 text-mars bg-mars/10">
+                                MARS ANALOG
+                            </span>
+                        </div>
+                        <p id="detail-subtitle" class="text-xs font-mono text-muted mt-1">
+                            CELESTIAL COUNTERPART: JEZERO CRATER &amp; GALE CRATER (MARS)
+                        </p>
+                    </div>
+
+                    <div class="flex items-baseline gap-2 bg-charcoal border hairline px-3.5 py-2">
+                        <span class="text-[10px] font-mono uppercase tracking-wider text-muted">Earth Similarity Index</span>
+                        <span id="detail-match" class="font-mono text-lg font-bold text-ink tabular-nums">94.8%</span>
+                    </div>
+                </div>
+
+                <!-- Side-by-Side Quantitative Comparison Table (Earth Site vs Target Celestial Body) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Terrestrial Site Column -->
+                    <div class="panel-base p-4 space-y-3">
+                        <div class="flex items-center justify-between border-b hairline pb-2">
+                            <span class="text-[10px] font-mono uppercase tracking-widest text-muted">Terrestrial Benchmark</span>
+                            <span id="comp-earth-name" class="text-xs font-mono font-semibold text-ink">ATACAMA CORE</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 text-xs font-mono tabular-nums">
+                            <div>
+                                <div class="text-[10px] text-muted">MEAN SURFACE TEMP</div>
+                                <div id="comp-earth-temp" class="text-sm text-ink font-medium mt-0.5">+16.5 °C</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-muted">ANNUAL PRECIPITATION</div>
+                                <div id="comp-earth-precip" class="text-sm text-ink font-medium mt-0.5">&lt; 2.0 mm/yr</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-muted">SURFACE UV / RAD FLUX</div>
+                                <div id="comp-earth-rad" class="text-sm text-ink font-medium mt-0.5">310 W/m² (Extreme)</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-muted">DOMINANT MINERALOGY</div>
+                                <div id="comp-earth-mineral" class="text-sm text-ink font-medium mt-0.5">ClO₄⁻ / Sulfates</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Planetary Counterpart Column -->
+                    <div class="panel-base p-4 space-y-3">
+                        <div class="flex items-center justify-between border-b hairline pb-2">
+                            <span class="text-[10px] font-mono uppercase tracking-widest text-muted">Planetary Target</span>
+                            <span id="comp-planet-name" class="text-xs font-mono font-semibold text-mars">JEZERO CRATER (MARS)</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 text-xs font-mono tabular-nums">
+                            <div>
+                                <div class="text-[10px] text-muted">MEAN SURFACE TEMP</div>
+                                <div id="comp-planet-temp" class="text-sm text-ink font-medium mt-0.5">-63.0 °C</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-muted">LIQUID WATER BUDGET</div>
+                                <div id="comp-planet-precip" class="text-sm text-ink font-medium mt-0.5">0.0 mm/yr (Arid)</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-muted">SURFACE UV / GCR DOSE</div>
+                                <div id="comp-planet-rad" class="text-sm text-ink font-medium mt-0.5">590 W/m² + GCR</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-muted">DOMINANT MINERALOGY</div>
+                                <div id="comp-planet-mineral" class="text-sm text-ink font-medium mt-0.5">Basalt / Perchlorates</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scientific Field Synthesis -->
+                <div class="panel-base p-4">
+                    <div class="text-[10px] font-mono uppercase tracking-widest text-muted mb-1.5">Field Research &amp; NASA Mission Validation</div>
+                    <p id="detail-summary" class="text-sm text-ink/90 leading-relaxed font-normal">
+                        Hyper-arid core of the Atacama exhibits Mars-like soil chemistry enriched with perchlorates, negligible precipitation, and intense UV surface flux—serving as NASA's primary testbed for autonomous rover navigation and microbial biosignature detection.
+                    </p>
+                </div>
+            </div>
+        </main>
+
+        <!-- 4. RIGHT ANALYTICAL & SIMULATION INSPECTOR (380px on Desktop) -->
+        <aside class="w-full lg:w-[380px] shrink-0 border-t lg:border-t-0 lg:border-l hairline bg-charcoal flex flex-col">
+            
+            <!-- Inspector Tab Header -->
+            <div class="grid grid-cols-2 border-b hairline bg-obsidian/50">
+                <button onclick="switchInspectorTab('telemetry')" id="tab-telemetry" class="py-3 px-3 text-[11px] font-mono uppercase tracking-wider border-b-2 border-white text-ink font-semibold transition-colors cursor-pointer">
+                    Telemetry &amp; Regolith
+                </button>
+                <button onclick="switchInspectorTab('matcher')" id="tab-matcher" class="py-3 px-3 text-[11px] font-mono uppercase tracking-wider border-b-2 border-transparent text-muted hover:text-ink transition-colors cursor-pointer">
+                    Mission Matcher
+                </button>
+            </div>
+
+            <!-- TAB 1: TELEMETRY & REGOLITH -->
+            <div id="inspector-telemetry" class="p-4 lg:p-5 space-y-5 flex-1 overflow-y-auto">
+                
+                <!-- Bespoke SVG 5-Axis Spider / Radar Chart -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] font-mono uppercase tracking-widest text-muted">5-Axis Environmental Fidelity</span>
+                        <span class="text-[10px] font-mono text-muted">SCALE: 0–100</span>
+                    </div>
+
+                    <div class="bg-obsidian border hairline p-3 flex flex-col items-center">
+                        <svg id="radarSvg" viewBox="0 0 320 265" class="w-full max-w-[310px] h-auto overflow-visible">
+                            <!-- Rendered dynamically by JS -->
+                        </svg>
+
+                        <!-- Chart Legend -->
+                        <div class="w-full pt-2 mt-1 border-t hairline flex items-center justify-center gap-5 text-[10px] font-mono">
+                            <span class="flex items-center gap-1.5 text-ink">
+                                <span id="legend-earth-swatch" class="w-2.5 h-0.5 bg-lunar inline-block"></span>
+                                EARTH SITE
+                            </span>
+                            <span class="flex items-center gap-1.5 text-muted">
+                                <span class="w-2.5 h-0.5 border-t border-dashed border-white/70 inline-block"></span>
+                                TARGET PLANET
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Axis Numeric Breakdown Table -->
+                <div class="bg-obsidian border hairline divide-y divide-white/[0.07]" id="axis-numeric-list">
+                    <!-- Populated via JS -->
+                </div>
+
+                <!-- Structured Geochemical & Mission Deployment Cards -->
+                <div class="space-y-2.5">
+                    <div class="text-[10px] font-mono uppercase tracking-widest text-muted">Operational Deployment Protocols</div>
+                    <div id="deployment-cards" class="space-y-2">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: MISSION MATCHER -->
+            <div id="inspector-matcher" class="hidden p-4 lg:p-5 space-y-5 flex-1 overflow-y-auto">
+                <div>
+                    <div class="text-[10px] font-mono uppercase tracking-widest text-muted">Mission Profile Presets</div>
+                    <div class="grid grid-cols-1 gap-1.5 mt-2">
+                        <button onclick="applyPreset('artemis')" class="w-full text-left px-3 py-2 bg-obsidian border hairline hover:border-lunar/60 transition-colors flex items-center justify-between cursor-pointer group">
+                            <span class="text-xs font-mono text-ink group-hover:text-lunar">ARTEMIS BASECAMP</span>
+                            <span class="text-[10px] font-mono text-muted">LUNAR SOUTH POLE</span>
+                        </button>
+                        <button onclick="applyPreset('astrobiology')" class="w-full text-left px-3 py-2 bg-obsidian border hairline hover:border-mars/60 transition-colors flex items-center justify-between cursor-pointer group">
+                            <span class="text-xs font-mono text-ink group-hover:text-mars">MARS ASTROBIOLOGY</span>
+                            <span class="text-[10px] font-mono text-muted">BIOSIGNATURE DRILL</span>
+                        </button>
+                        <button onclick="applyPreset('lavatube')" class="w-full text-left px-3 py-2 bg-obsidian border hairline hover:border-white/40 transition-colors flex items-center justify-between cursor-pointer group">
+                            <span class="text-xs font-mono text-ink">LAVA TUBE HABITAT</span>
+                            <span class="text-[10px] font-mono text-muted">GCR SHIELDING</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Weighted Parameter Sliders -->
+                <div class="bg-obsidian border hairline p-3.5 space-y-4">
+                    <div class="text-[10px] font-mono uppercase tracking-widest text-muted border-b hairline pb-2">
+                        Engineering Weight Parameters
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-[11px] font-mono mb-1.5 tabular-nums">
+                            <span class="text-ink">REGOLITH FIDELITY</span>
+                            <span id="w-val-regolith" class="text-lunar">85%</span>
+                        </div>
+                        <input type="range" id="slider-regolith" min="0" max="100" value="85" oninput="recalculateRankings()">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-[11px] font-mono mb-1.5 tabular-nums">
+                            <span class="text-ink">THERMAL STRESS</span>
+                            <span id="w-val-thermal" class="text-lunar">70%</span>
+                        </div>
+                        <input type="range" id="slider-thermal" min="0" max="100" value="70" oninput="recalculateRankings()">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-[11px] font-mono mb-1.5 tabular-nums">
+                            <span class="text-ink">SUBSURFACE ACCESS</span>
+                            <span id="w-val-subsurface" class="text-lunar">60%</span>
+                        </div>
+                        <input type="range" id="slider-subsurface" min="0" max="100" value="60" oninput="recalculateRankings()">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-[11px] font-mono mb-1.5 tabular-nums">
+                            <span class="text-ink">LOGISTICS ISOLATION</span>
+                            <span id="w-val-isolation" class="text-lunar">75%</span>
+                        </div>
+                        <input type="range" id="slider-isolation" min="0" max="100" value="75" oninput="recalculateRankings()">
+                    </div>
+                </div>
+
+                <!-- Real-Time Ranked Analog Output -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-mono uppercase tracking-widest text-muted">Computed Analog Ranking</span>
+                        <span class="text-[10px] font-mono text-muted">LIVE</span>
+                    </div>
+                    <div id="matcher-ranking-list" class="space-y-2">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- SECONDARY FULL-WIDTH VIEW: COMPARATIVE MATRIX (Accessible from Top Nav) -->
+    <section id="view-matrix" class="hidden flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
+        <div class="border-b hairline pb-4 flex flex-wrap items-end justify-between gap-4">
+            <div>
+                <div class="text-[11px] font-mono uppercase tracking-widest text-muted">Cross-Site Telemetry Matrix</div>
+                <h2 class="font-display text-2xl font-bold text-ink mt-1">Planetary Analog Benchmarking Table</h2>
+            </div>
+            <button onclick="switchMainView('atlas')" class="px-3 py-1.5 border hairline bg-charcoal text-xs font-mono uppercase tracking-wider text-ink hover:border-white/40 cursor-pointer">
+                Return to Atlas View
+            </button>
+        </div>
+
+        <div class="overflow-x-auto border hairline bg-charcoal">
+            <table class="w-full text-left border-collapse font-mono text-xs tabular-nums">
+                <thead>
+                    <tr class="border-b hairline bg-obsidian text-[10px] uppercase tracking-wider text-muted">
+                        <th class="p-3.5">ID / Analog Site</th>
+                        <th class="p-3.5">Target Body</th>
+                        <th class="p-3.5">Coordinates</th>
+                        <th class="p-3.5">Elevation</th>
+                        <th class="p-3.5">Mean Temp</th>
+                        <th class="p-3.5">Regolith Class</th>
+                        <th class="p-3.5 text-right">Similarity</th>
+                    </tr>
+                </thead>
+                <tbody id="matrix-table-body" class="divide-y divide-white/[0.07]">
+                    <!-- Populated via JS -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- SECONDARY FULL-WIDTH VIEW: MISSION SIMULATOR (Accessible from Top Nav) -->
+    <section id="view-simulator" class="hidden flex-1 max-w-5xl w-full mx-auto p-4 lg:p-8 space-y-6">
+        <div class="border-b hairline pb-4 flex flex-wrap items-end justify-between gap-4">
+            <div>
+                <div class="text-[11px] font-mono uppercase tracking-widest text-muted">Expedition Architecture Engine</div>
+                <h2 class="font-display text-2xl font-bold text-ink mt-1">Habitat &amp; Surface Operations Trade-Study</h2>
+            </div>
+            <button onclick="switchMainView('atlas')" class="px-3 py-1.5 border hairline bg-charcoal text-xs font-mono uppercase tracking-wider text-ink hover:border-white/40 cursor-pointer">
+                Return to Atlas View
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="panel-base p-5 space-y-3">
+                <div class="text-[10px] font-mono uppercase tracking-widest text-lunar">Scenario A // Artemis III+</div>
+                <h3 class="font-display text-lg font-semibold text-ink">Lunar South Pole Basecamp</h3>
+                <p class="text-xs text-muted leading-relaxed">
+                    Requires cryogenic shadowing resilience, impact breccia geology training, and high-inclination solar illumination modeling.
+                </p>
+                <div class="pt-2 border-t hairline flex justify-between text-xs font-mono">
+                    <span class="text-muted">RECOMMENDED:</span>
+                    <span class="text-ink font-semibold">02 // HAUGHTON CRATER</span>
+                </div>
+                <button onclick="launchScenarioInAtlas('haughton', 'artemis')" class="w-full py-2 border hairline bg-obsidian hover:border-lunar text-[11px] font-mono uppercase tracking-wider text-ink transition-colors cursor-pointer">
+                    Load in Telemetry Console
+                </button>
+            </div>
+
+            <div class="panel-base p-5 space-y-3">
+                <div class="text-[10px] font-mono uppercase tracking-widest text-mars">Scenario B // Mars Sample Return</div>
+                <h3 class="font-display text-lg font-semibold text-ink">Perchlorate Regolith &amp; Astrobiology</h3>
+                <p class="text-xs text-muted leading-relaxed">
+                    Requires anhydrous sulfate crusts, hyper-arid UV sterilization flux, and autonomous hazard-avoidance rover terrain.
+                </p>
+                <div class="pt-2 border-t hairline flex justify-between text-xs font-mono">
+                    <span class="text-muted">RECOMMENDED:</span>
+                    <span class="text-ink font-semibold">01 // ATACAMA DESERT</span>
+                </div>
+                <button onclick="launchScenarioInAtlas('atacama', 'astrobiology')" class="w-full py-2 border hairline bg-obsidian hover:border-mars text-[11px] font-mono uppercase tracking-wider text-ink transition-colors cursor-pointer">
+                    Load in Telemetry Console
+                </button>
+            </div>
+
+            <div class="panel-base p-5 space-y-3">
+                <div class="text-[10px] font-mono uppercase tracking-widest text-ink">Scenario C // Subsurface ISRU</div>
+                <h3 class="font-display text-lg font-semibold text-ink">Lava Tube Radiation Shelter</h3>
+                <p class="text-xs text-muted leading-relaxed">
+                    Requires intact basaltic pyroducts for cosmic-ray shielding, tholeiitic regolith sintering, and long-duration crew isolation.
+                </p>
+                <div class="pt-2 border-t hairline flex justify-between text-xs font-mono">
+                    <span class="text-muted">RECOMMENDED:</span>
+                    <span class="text-ink font-semibold">03 // MAUNA LOA FIELD</span>
+                </div>
+                <button onclick="launchScenarioInAtlas('maunaloa', 'lavatube')" class="w-full py-2 border hairline bg-obsidian hover:border-white/50 text-[11px] font-mono uppercase tracking-wider text-ink transition-colors cursor-pointer">
+                    Load in Telemetry Console
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE-OVER DRAWER: NASA OPEN DATA SOURCES -->
+    <div id="data-drawer-backdrop" onclick="toggleDataDrawer(false)" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-xs hidden"></div>
+    <aside id="data-drawer" class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-charcoal border-l hairline transform translate-x-full transition-transform duration-200 flex flex-col">
+        <div class="h-14 px-5 border-b hairline flex items-center justify-between bg-obsidian">
+            <div>
+                <span class="text-[10px] font-mono uppercase tracking-widest text-lunar">Verified Repositories</span>
+                <h2 class="font-display text-sm font-bold uppercase tracking-wider text-ink">NASA Open Data Sources</h2>
+            </div>
+            <button onclick="toggleDataDrawer(false)" class="p-1.5 border hairline text-muted hover:text-ink cursor-pointer" aria-label="Close Drawer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="square" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="p-5 space-y-4 overflow-y-auto flex-1 text-xs">
+            <p class="text-muted leading-relaxed">
+                Environmental telemetry, topographic elevation profiles, and mineralogical indices in <strong class="text-ink">TERRA-ANALOG</strong> are derived from public NASA &amp; partner orbital datasets:
+            </p>
+
+            <div class="space-y-2.5 font-mono">
+                <a href="https://trek.nasa.gov/mars/" target="_blank" rel="noopener" class="block p-3.5 bg-obsidian border hairline hover:border-mars transition-colors">
+                    <div class="flex items-center justify-between text-mars font-semibold">
+                        <span>01 // NASA MARS TREK PORTAL</span>
+                        <span>↗</span>
+                    </div>
+                    <p class="font-sans text-muted mt-1">MOLA elevation rasters, CRISM mineral maps, and Jezero/Gale landing site telemetry.</p>
+                </a>
+
+                <a href="https://trek.nasa.gov/moon/" target="_blank" rel="noopener" class="block p-3.5 bg-obsidian border hairline hover:border-lunar transition-colors">
+                    <div class="flex items-center justify-between text-lunar font-semibold">
+                        <span>02 // NASA MOON TREK PORTAL</span>
+                        <span>↗</span>
+                    </div>
+                    <p class="font-sans text-muted mt-1">LRO LOLA altimetry and Shackleton Crater permanently shadowed region (PSR) thermal data.</p>
+                </a>
+
+                <a href="https://www.earthdata.nasa.gov/" target="_blank" rel="noopener" class="block p-3.5 bg-obsidian border hairline hover:border-white/40 transition-colors">
+                    <div class="flex items-center justify-between text-ink font-semibold">
+                        <span>03 // NASA EARTHDATA &amp; MODIS</span>
+                        <span>↗</span>
+                    </div>
+                    <p class="font-sans text-muted mt-1">MODIS Land Surface Temperature (LST), GPM aridity indices, and ASTER spectral mineralogy.</p>
+                </a>
+
+                <a href="https://www.nasa.gov/analog-field-testing/" target="_blank" rel="noopener" class="block p-3.5 bg-obsidian border hairline hover:border-white/40 transition-colors">
+                    <div class="flex items-center justify-between text-ink font-semibold">
+                        <span>04 // NASA ANALOG FIELD MISSIONS</span>
+                        <span>↗</span>
+                    </div>
+                    <p class="font-sans text-muted mt-1">Field campaign archives from ARADS (Atacama), HMP (Haughton), HI-SEAS (Mauna Loa), and McMurdo LTER.</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="p-4 border-t hairline bg-obsidian text-[10px] font-mono text-muted flex justify-between">
+            <span>NASA SPACE APPS CHALLENGE 2026</span>
+            <span>MIT OPEN LICENSE</span>
+        </div>
+    </aside>
+
+    <!-- APPLICATION ENGINE -->
+    <script>
+        // 1. VERIFIED NASA PLANETARY ANALOG DATASET
+        const ANALOG_SITES = [
+            {
+                id: 'atacama',
+                index: '01',
+                name: 'ATACAMA DESERT, CHILE',
+                shortName: 'ATACAMA DESERT',
+                targetCategory: 'MARS',
+                targetBadge: 'MARS ANALOG',
+                counterpart: 'JEZERO CRATER & GALE CRATER (MARS)',
+                lat: -24.5000,
+                lon: -69.2500,
+                coordLabel: '24.5000° S, 69.2500° W',
+                elevation: '2,400m',
+                solarIrradiance: '2,580 kWh/m²',
+                simulantClass: 'MGS-1 // PERCHLORATE-RICH',
+                similarity: 94.8,
+                earthStats: {
+                    temp: '+16.5 °C',
+                    precip: '< 2.0 mm/yr',
+                    rad: '310 W/m² (UV-B)',
+                    mineral: 'ClO₄⁻ / Sulfates'
+                },
+                planetStats: {
+                    temp: '-63.0 °C',
+                    precip: '0.0 mm/yr (Arid)',
+                    rad: '590 W/m² + GCR',
+                    mineral: 'Basalt / Perchlorates'
+                },
+                summary: 'Hyper-arid core of the Atacama exhibits Mars-like soil chemistry enriched with perchlorates, negligible precipitation, and intense UV surface flux—serving as NASA’s primary proving ground for autonomous rover navigation and microbial biosignature detection.',
+                axes: ['Aridity', 'Thermal', 'Regolith', 'Radiation', 'Isolation'],
+                earthScores: [98, 64, 96, 92, 88],
+                planetScores: [100, 96, 98, 98, 95],
+                weights: { regolith: 96, thermal: 68, subsurface: 52, isolation: 86 },
+                deployments: [
+                    { code: 'OPS-01', title: 'Autonomous Rover LIDAR Navigation', detail: 'Hazard-avoidance trials across rocky alluvial fans.' },
+                    { code: 'OPS-02', title: 'Subsurface Biosignature Drilling', detail: 'Endolithic microbial assay validation (ARADS).' },
+                    { code: 'OPS-03', title: 'Perchlorate ISRU Remediation', detail: 'Regolith detoxification & water extraction testing.' }
+                ]
+            },
+            {
+                id: 'haughton',
+                index: '02',
+                name: 'HAUGHTON CRATER, DEVON ISLAND, CANADA',
+                shortName: 'HAUGHTON CRATER',
+                targetCategory: 'DUAL',
+                targetBadge: 'MOON & MARS',
+                counterpart: 'SHACKLETON RIM (MOON) & NOCTIS LABYRINTHUS (MARS)',
+                lat: 75.4333,
+                lon: -89.6833,
+                coordLabel: '75.4333° N, 89.6833° W',
+                elevation: '200m',
+                solarIrradiance: '890 kWh/m²',
+                simulantClass: 'LHS-1 // IMPACT BRECCIA',
+                similarity: 91.2,
+                earthStats: {
+                    temp: '-16.0 °C',
+                    precip: '120 mm/yr (Snow)',
+                    rad: '24h Polar Cycle',
+                    mineral: 'Carbonate Breccia'
+                },
+                planetStats: {
+                    temp: '-183°C to -55°C',
+                    precip: '0.0 mm/yr (Vacuum)',
+                    rad: 'Unshielded GCR/SPE',
+                    mineral: 'Anorthosite Breccia'
+                },
+                summary: 'A 23-km-wide meteorite impact structure in the uninhabited Canadian High Arctic featuring frost-shattered impact breccia, polar desert permafrost, and extreme logistical isolation under the NASA Haughton-Mars Project (HMP).',
+                axes: ['Aridity', 'Thermal', 'Regolith', 'Radiation', 'Isolation'],
+                earthScores: [85, 90, 91, 76, 96],
+                planetScores: [100, 98, 95, 96, 99],
+                weights: { regolith: 91, thermal: 90, subsurface: 70, isolation: 96 },
+                deployments: [
+                    { code: 'OPS-01', title: 'Pressurized Lunar Rover EVAs', detail: 'Multi-day crew traverses in simulated spacesuits.' },
+                    { code: 'OPS-02', title: 'Impact Breccia Sample Curation', detail: 'Astronaut geological field training for Artemis.' },
+                    { code: 'OPS-03', title: '20-Min Comms Latency Protocols', detail: 'Asynchronous mission control workflow validation.' }
+                ]
+            },
+            {
+                id: 'maunaloa',
+                index: '03',
+                name: 'MAUNA LOA VOLCANIC FIELD, HAWAII',
+                shortName: 'MAUNA LOA FIELD',
+                targetCategory: 'DUAL',
+                targetBadge: 'MOON / MARS',
+                counterpart: 'MARIUS HILLS SKYLIGHTS (MOON) & THARSIS (MARS)',
+                lat: 19.4795,
+                lon: -155.6027,
+                coordLabel: '19.4795° N, 155.6027° W',
+                elevation: '2,500m',
+                solarIrradiance: '2,240 kWh/m²',
+                simulantClass: 'LMS-1 // THOLEIITIC BASALT',
+                similarity: 89.5,
+                earthStats: {
+                    temp: '+7.2 °C',
+                    precip: '350 mm/yr',
+                    rad: 'High-Altitude UV',
+                    mineral: 'Tholeiitic Basalt'
+                },
+                planetStats: {
+                    temp: '-20°C (Subsurface)',
+                    precip: '0.0 mm/yr',
+                    rad: '< 5 mSv/yr (Shielded)',
+                    mineral: 'Mare / Tharsis Basalt'
+                },
+                summary: 'Barren basaltic lava flows on Mauna Loa feature intact pyroducts and subterranean lava tubes—offering direct structural analogs for natural radiation-shielded Lunar and Martian underground bases alongside HI-SEAS crew isolation habitats.',
+                axes: ['Aridity', 'Thermal', 'Regolith', 'Radiation', 'Isolation'],
+                earthScores: [76, 62, 97, 84, 88],
+                planetScores: [100, 94, 98, 96, 95],
+                weights: { regolith: 95, thermal: 60, subsurface: 98, isolation: 82 },
+                deployments: [
+                    { code: 'OPS-01', title: 'Subsurface Lava Tube Shielding', detail: 'LIDAR cavern mapping for cosmic ray protection.' },
+                    { code: 'OPS-02', title: 'HI-SEAS Long-Duration Isolation', detail: '8–12 month closed-habitat crew behavioral trials.' },
+                    { code: 'OPS-03', title: 'Basalt Regolith 3D Sintering', detail: 'Microwave/solar ISRU habitat brick fabrication.' }
+                ]
+            },
+            {
+                id: 'mcmurdo',
+                index: '04',
+                name: 'MCMURDO DRY VALLEYS, ANTARCTICA',
+                shortName: 'MCMURDO VALLEYS',
+                targetCategory: 'MARS',
+                targetBadge: 'MARS POLAR',
+                counterpart: 'PLANUM BOREUM & PHOENIX LANDING SITE (MARS)',
+                lat: -77.4667,
+                lon: 162.5167,
+                coordLabel: '77.4667° S, 162.5167° E',
+                elevation: '800m',
+                solarIrradiance: '940 kWh/m²',
+                simulantClass: 'MGS-1C // ICE-CEMENTED',
+                similarity: 96.1,
+                earthStats: {
+                    temp: '-20.0 °C',
+                    precip: '< 10 mm/yr (Subl.)',
+                    rad: 'Ozone-Depleted UV',
+                    mineral: 'Ice-Cemented Gravel'
+                },
+                planetStats: {
+                    temp: '-75.0 °C',
+                    precip: 'CO₂ / H₂O Frost',
+                    rad: 'High Polar UV/GCR',
+                    mineral: 'Permafrost Regolith'
+                },
+                summary: 'Scoured by 320 km/h katabatic winds that sublimate all surface snow, the McMurdo Dry Valleys represent the coldest, driest hyper-arid environment on Earth—matching Martian polar permafrost and subsurface water-ice deposits.',
+                axes: ['Aridity', 'Thermal', 'Regolith', 'Radiation', 'Isolation'],
+                earthScores: [97, 98, 94, 88, 98],
+                planetScores: [100, 99, 96, 95, 99],
+                weights: { regolith: 92, thermal: 99, subsurface: 84, isolation: 98 },
+                deployments: [
+                    { code: 'OPS-01', title: 'Subsurface Water-Ice Mining', detail: 'Thermal coring drills for Martian ISRU propellant.' },
+                    { code: 'OPS-02', title: 'Cryo-Astrobiology Validation', detail: 'Dormant extremophile detection in ancient ice.' },
+                    { code: 'OPS-03', title: 'Katabatic Dust Seal Testing', detail: 'Robotic actuator resilience at -45°C winter lows.' }
+                ]
+            }
+        ];
+
+        // Simplified Continental Outlines (Lon, Lat arrays) for crisp vector cartography
+        const CONTINENT_POLYGONS = [
+            // North America
+            [[-168,65],[-140,70],[-110,73],[-82,70],[-65,60],[-55,48],[-70,41],[-81,25],[-90,21],[-84,10],[-78,9],[-92,16],[-105,20],[-115,31],[-124,42],[-135,58],[-168,65]],
+            // Greenland / Arctic Archipelago
+            [[-58,60],[-44,60],[-20,70],[-18,82],[-55,82],[-72,76],[-58,60]],
+            // South America
+            [[-78,9],[-62,10],[-50,0],[-35,-6],[-38,-18],[-48,-28],[-58,-38],[-68,-54],[-74,-52],[-72,-35],[-70,-18],[-81,-5],[-78,9]],
+            // Europe
+            [[-9,36],[-9,43],[-2,48],[4,52],[9,55],[6,61],[18,69],[30,70],[42,67],[55,68],[58,52],[40,45],[28,41],[24,37],[15,38],[12,44],[4,43],[-5,36],[-9,36]],
+            // Africa
+            [[-17,15],[-12,28],[0,36],[11,37],[25,32],[33,30],[43,12],[51,12],[41,-2],[40,-15],[35,-25],[20,-35],[16,-28],[12,-16],[9,4],[2,6],[-8,5],[-17,15]],
+            // Asia
+            [[28,41],[42,43],[55,52],[60,68],[85,73],[115,74],[145,70],[175,66],[162,55],[140,52],[132,42],[121,39],[122,30],[109,20],[103,2],[98,16],[88,22],[78,8],[68,24],[56,26],[48,30],[36,36],[28,41]],
+            // Australia
+            [[114,-22],[128,-14],[142,-11],[153,-28],[150,-38],[138,-35],[129,-32],[115,-34],[114,-22]],
+            // Antarctica
+            [[-180,-72],[-120,-74],[-65,-65],[-55,-74],[0,-70],[60,-68],[120,-67],[165,-72],[180,-76],[180,-88],[-180,-88],[-180,-72]]
+        ];
+
+        // CONSOLE STATE
+        let activeSiteId = 'atacama';
+        let canvasState = {
+            zoom: 1,
+            targetZoom: 1,
+            centerLon: 0,
+            centerLat: 0,
+            targetLon: 0,
+            targetLat: 0,
+            pulsePhase: 0
+        };
+
+        // INITIALIZATION
+        document.addEventListener('DOMContentLoaded', () => {
+            renderLeftRail();
+            renderMatrixTable();
+            selectSite('atacama', false);
+            recalculateRankings();
+            initOrbitalCanvas();
+        });
+
+        // 2. RENDER LEFT NAVIGATION RAIL
+        function renderLeftRail() {
+            const container = document.getElementById('site-rail-list');
+            container.innerHTML = ANALOG_SITES.map(site => {
+                const isActive = site.id === activeSiteId;
+                const accentHex = site.targetCategory === 'MARS' ? '#FF4F1F' : '#38BDF8';
+                return `
+                    <button onclick="selectSite('${site.id}', true)"
+                        class="w-full text-left px-4 py-3.5 transition-colors relative block cursor-pointer ${isActive ? 'bg-surface' : 'hover:bg-white/[0.03]'}">
+                        ${isActive ? `<span class="absolute left-0 top-0 bottom-0 w-[3px]" style="background-color: ${accentHex}"></span>` : ''}
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-[11px] font-mono ${isActive ? 'text-ink font-semibold' : 'text-muted'}">
+                                ${site.index} // ${site.shortName}
+                            </span>
+                            <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 border ${site.targetCategory === 'MARS' ? 'border-mars/40 text-mars' : 'border-lunar/40 text-lunar'}">
+                                ${site.targetCategory === 'MARS' ? 'MARS' : 'MOON/MARS'}
+                            </span>
+                        </div>
+                        <div class="text-[11px] font-mono text-muted mt-1.5 tabular-nums">
+                            ${site.coordLabel}
+                        </div>
+                        <!-- Similarity Index Hairline Bar -->
+                        <div class="mt-2.5 flex items-center gap-2.5">
+                            <div class="flex-1 h-[2px] bg-white/10 overflow-hidden">
+                                <div class="h-full transition-all duration-300" style="width: ${site.similarity}%; background-color: ${isActive ? accentHex : '#8A94A6'}"></div>
+                            </div>
+                            <span class="text-[10px] font-mono tabular-nums ${isActive ? 'text-ink font-semibold' : 'text-muted'}">
+                                ${site.similarity.toFixed(1)}%
+                            </span>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        // 3. SELECT SITE & SYNCHRONIZE ALL CONSOLE PANELS
+        function selectSite(siteId, focusMap = true) {
+            activeSiteId = siteId;
+            const site = ANALOG_SITES.find(s => s.id === siteId);
+            if (!site) return;
+
+            renderLeftRail();
+
+            // Update Viewport & Overlay Telemetry
+            document.getElementById('viewport-site-code').textContent = `SITE ${site.index} // ${site.shortName}`;
+            document.getElementById('overlay-coords').textContent = site.coordLabel;
+            document.getElementById('overlay-elev').textContent = `ELEV: ${site.elevation}`;
+            document.getElementById('overlay-solar').textContent = `SOLAR: ${site.solarIrradiance}`;
+
+            const simulantEl = document.getElementById('overlay-simulant');
+            simulantEl.textContent = site.simulantClass;
+            simulantEl.className = `text-xs font-mono font-medium mt-0.5 ${site.targetCategory === 'MARS' ? 'text-mars' : 'text-lunar'}`;
+
+            // Update Split Telemetry Readout Card
+            document.getElementById('detail-index').textContent = site.index;
+            document.getElementById('detail-title').textContent = site.name;
+
+            const badgeEl = document.getElementById('detail-badge');
+            badgeEl.textContent = site.targetBadge;
+            badgeEl.className = site.targetCategory === 'MARS'
+                ? 'px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider border border-mars/40 text-mars bg-mars/10'
+                : 'px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider border border-lunar/40 text-lunar bg-lunar/10';
+
+            document.getElementById('detail-subtitle').textContent = `CELESTIAL COUNTERPART: ${site.counterpart}`;
+            document.getElementById('detail-match').textContent = `${site.similarity.toFixed(1)}%`;
+
+            // Earth vs Target Planet Columns
+            document.getElementById('comp-earth-name').textContent = site.shortName;
+            document.getElementById('comp-earth-temp').textContent = site.earthStats.temp;
+            document.getElementById('comp-earth-precip').textContent = site.earthStats.precip;
+            document.getElementById('comp-earth-rad').textContent = site.earthStats.rad;
+            document.getElementById('comp-earth-mineral').textContent = site.earthStats.mineral;
+
+            const planetNameEl = document.getElementById('comp-planet-name');
+            planetNameEl.textContent = site.counterpart.split('&')[0].trim();
+            planetNameEl.className = `text-xs font-mono font-semibold ${site.targetCategory === 'MARS' ? 'text-mars' : 'text-lunar'}`;
+
+            document.getElementById('comp-planet-temp').textContent = site.planetStats.temp;
+            document.getElementById('comp-planet-precip').textContent = site.planetStats.precip;
+            document.getElementById('comp-planet-rad').textContent = site.planetStats.rad;
+            document.getElementById('comp-planet-mineral').textContent = site.planetStats.mineral;
+
+            document.getElementById('detail-summary').textContent = site.summary;
+
+            // Update Right Inspector Radar Chart & Deployment Cards
+            renderBespokeRadarChart(site);
+            renderAxisBreakdown(site);
+            renderDeploymentCards(site);
+
+            if (focusMap) {
+                focusActiveSite();
+            }
+        }
+
+        // 4. BESPOKE SVG 5-AXIS SPIDER / RADAR CHART (Zero external chart libraries)
+        function renderBespokeRadarChart(site) {
+            const svg = document.getElementById('radarSvg');
+            const cx = 160;
+            const cy = 132;
+            const maxRadius = 86;
+            const numAxes = site.axes.length;
+            const accentColor = site.targetCategory === 'MARS' ? '#FF4F1F' : '#38BDF8';
+
+            document.getElementById('legend-earth-swatch').style.backgroundColor = accentColor;
+
+            // Helper to convert axis index & value (0-100) to (x, y)
+            const getPoint = (index, value) => {
+                const angle = (Math.PI * 2 * index) / numAxes - Math.PI / 2;
+                const r = (value / 100) * maxRadius;
+                return {
+                    x: cx + r * Math.cos(angle),
+                    y: cy + r * Math.sin(angle)
+                };
+            };
+
+            let markup = '';
+
+            // Concentric Pentagonal Rings (25%, 50%, 75%, 100%)
+            [25, 50, 75, 100].forEach(level => {
+                const pts = site.axes.map((_, i) => {
+                    const p = getPoint(i, level);
+                    return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+                }).join(' ');
+                markup += `<polygon points="${pts}" fill="none" stroke="rgba(255,255,255,0.09)" stroke-width="1" />`;
+            });
+
+            // Radial Axis Spokes & Labels
+            site.axes.forEach((label, i) => {
+                const outer = getPoint(i, 100);
+                const labelPos = getPoint(i, 122);
+                markup += `<line x1="${cx}" y1="${cy}" x2="${outer.x.toFixed(1)}" y2="${outer.y.toFixed(1)}" stroke="rgba(255,255,255,0.09)" stroke-width="1" />`;
+                markup += `
+                    <text x="${labelPos.x.toFixed(1)}" y="${labelPos.y.toFixed(1)}"
+                        fill="#8A94A6" font-family="JetBrains Mono, monospace" font-size="9"
+                        text-anchor="middle" dominant-baseline="middle">
+                        ${label.toUpperCase()}
+                    </text>
+                `;
+            });
+
+            // Target Planet Polygon (Dashed Reference)
+            const planetPts = site.planetScores.map((val, i) => {
+                const p = getPoint(i, val);
+                return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+            }).join(' ');
+            markup += `<polygon points="${planetPts}" fill="rgba(255,255,255,0.04)" stroke="rgba(242,244,248,0.65)" stroke-width="1.2" stroke-dasharray="3 3" />`;
+
+            // Earth Analog Site Polygon
+            const earthPts = site.earthScores.map((val, i) => {
+                const p = getPoint(i, val);
+                return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+            }).join(' ');
+            markup += `<polygon points="${earthPts}" fill="${accentColor}26" stroke="${accentColor}" stroke-width="1.75" />`;
+
+            // Data Vertices
+            site.earthScores.forEach((val, i) => {
+                const p = getPoint(i, val);
+                markup += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3" fill="${accentColor}" stroke="#080A0F" stroke-width="1.2" />`;
+            });
+
+            svg.innerHTML = markup;
+        }
+
+        function renderAxisBreakdown(site) {
+            const container = document.getElementById('axis-numeric-list');
+            container.innerHTML = site.axes.map((label, idx) => `
+                <div class="px-3 py-2 flex items-center justify-between text-[11px] font-mono tabular-nums">
+                    <span class="text-muted uppercase">${label}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-ink font-semibold">${site.earthScores[idx]}</span>
+                        <span class="text-white/25">/</span>
+                        <span class="text-muted">${site.planetScores[idx]}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderDeploymentCards(site) {
+            const container = document.getElementById('deployment-cards');
+            container.innerHTML = site.deployments.map(dep => `
+                <div class="bg-obsidian border hairline p-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-mono px-1.5 py-0.5 bg-surface text-muted border hairline">${dep.code}</span>
+                        <h4 class="font-display text-xs font-semibold text-ink">${dep.title}</h4>
+                    </div>
+                    <p class="text-xs text-muted mt-1.5 leading-relaxed">${dep.detail}</p>
+                </div>
+            `).join('');
+        }
+
+        // 5. MISSION MATCHER WEIGHTED RANKING ENGINE
+        function recalculateRankings() {
+            const wRegolith = parseInt(document.getElementById('slider-regolith').value, 10);
+            const wThermal = parseInt(document.getElementById('slider-thermal').value, 10);
+            const wSubsurface = parseInt(document.getElementById('slider-subsurface').value, 10);
+            const wIsolation = parseInt(document.getElementById('slider-isolation').value, 10);
+
+            document.getElementById('w-val-regolith').textContent = `${wRegolith}%`;
+            document.getElementById('w-val-thermal').textContent = `${wThermal}%`;
+            document.getElementById('w-val-subsurface').textContent = `${wSubsurface}%`;
+            document.getElementById('w-val-isolation').textContent = `${wIsolation}%`;
+
+            const totalWeight = (wRegolith + wThermal + wSubsurface + wIsolation) || 1;
+
+            const ranked = ANALOG_SITES.map(site => {
+                const m = site.weights;
+                const score = (
+                    (m.regolith * wRegolith) +
+                    (m.thermal * wThermal) +
+                    (m.subsurface * wSubsurface) +
+                    (m.isolation * wIsolation)
+                ) / totalWeight;
+                return { ...site, computedScore: score };
+            }).sort((a, b) => b.computedScore - a.computedScore);
+
+            const listEl = document.getElementById('matcher-ranking-list');
+            listEl.innerHTML = ranked.map((site, idx) => {
+                const isFirst = idx === 0;
+                const barColor = site.targetCategory === 'MARS' ? '#FF4F1F' : '#38BDF8';
+                return `
+                    <button onclick="selectSite('${site.id}', true)"
+                        class="w-full text-left p-3 bg-obsidian border transition-colors cursor-pointer ${isFirst ? 'border-white/35' : 'hairline hover:border-white/20'}">
+                        <div class="flex items-center justify-between text-xs font-mono tabular-nums">
+                            <span class="text-ink font-semibold">
+                                #0${idx + 1} // ${site.shortName}
+                            </span>
+                            <span class="font-bold" style="color: ${isFirst ? barColor : '#F2F4F8'}">
+                                ${site.computedScore.toFixed(1)}%
+                            </span>
+                        </div>
+                        <div class="mt-2 h-1 bg-white/10 w-full overflow-hidden">
+                            <div class="h-full transition-all duration-300" style="width: ${site.computedScore}%; background-color: ${barColor}"></div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function applyPreset(presetKey) {
+            const presets = {
+                artemis: { regolith: 90, thermal: 95, subsurface: 70, isolation: 95 },
+                astrobiology: { regolith: 100, thermal: 75, subsurface: 55, isolation: 85 },
+                lavatube: { regolith: 90, thermal: 55, subsurface: 100, isolation: 80 }
+            };
+            const p = presets[presetKey];
+            if (!p) return;
+
+            document.getElementById('slider-regolith').value = p.regolith;
+            document.getElementById('slider-thermal').value = p.thermal;
+            document.getElementById('slider-subsurface').value = p.subsurface;
+            document.getElementById('slider-isolation').value = p.isolation;
+            recalculateRankings();
+        }
+
+        // 6. INTERACTIVE HTML5 CANVAS ORBITAL & TOPOGRAPHIC PROJECTION
+        function initOrbitalCanvas() {
+            const canvas = document.getElementById('orbitalCanvas');
+            const ctx = canvas.getContext('2d');
+
+            function resizeCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // Convert (lon, lat) to Canvas (x, y) using animated camera state
+            function geoToScreen(lon, lat, width, height) {
+                const scaleX = (width / 360) * canvasState.zoom;
+                const scaleY = (height / 180) * canvasState.zoom;
+                const x = (width / 2) + (lon - canvasState.centerLon) * scaleX;
+                const y = (height / 2) - (lat - canvasState.centerLat) * scaleY;
+                return { x, y };
+            }
+
+            function screenToGeo(x, y, width, height) {
+                const scaleX = (width / 360) * canvasState.zoom;
+                const scaleY = (height / 180) * canvasState.zoom;
+                const lon = ((x - width / 2) / scaleX) + canvasState.centerLon;
+                const lat = -((y - height / 2) / scaleY) + canvasState.centerLat;
+                return {
+                    lon: Math.max(-180, Math.min(180, lon)),
+                    lat: Math.max(-90, Math.min(90, lat))
+                };
+            }
+
+            // Mouse Move Graticule Readout
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+                const geo = screenToGeo(mx, my, rect.width, rect.height);
+                const latDir = geo.lat >= 0 ? 'N' : 'S';
+                const lonDir = geo.lon >= 0 ? 'E' : 'W';
+                document.getElementById('cursor-graticule').textContent =
+                    `CURSOR: ${Math.abs(geo.lat).toFixed(2)}° ${latDir}, ${Math.abs(geo.lon).toFixed(2)}° ${lonDir}`;
+            });
+
+            // Click Marker Selection
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+
+                let closestSite = null;
+                let minDist = 28; // hit radius in px
+
+                ANALOG_SITES.forEach(site => {
+                    const pos = geoToScreen(site.lon, site.lat, rect.width, rect.height);
+                    const dist = Math.hypot(pos.x - mx, pos.y - my);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        closestSite = site;
+                    }
+                });
+
+                if (closestSite) {
+                    selectSite(closestSite.id, true);
+                }
+            });
+
+            // Render Loop
+            function renderFrame() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const w = rect.width;
+                const h = rect.height;
+
+                // Smoothly interpolate camera pan & zoom
+                canvasState.zoom += (canvasState.targetZoom - canvasState.zoom) * 0.08;
+                canvasState.centerLon += (canvasState.targetLon - canvasState.centerLon) * 0.08;
+                canvasState.centerLat += (canvasState.targetLat - canvasState.centerLat) * 0.08;
+                canvasState.pulsePhase = (canvasState.pulsePhase + 0.025) % 1;
+
+                // Clear Obsidian Background
+                ctx.fillStyle = '#06080C';
+                ctx.fillRect(0, 0, w, h);
+
+                // Draw Graticule Grid (30° intervals)
+                ctx.lineWidth = 1;
+                for (let lon = -180; lon <= 180; lon += 30) {
+                    const p1 = geoToScreen(lon, 90, w, h);
+                    const p2 = geoToScreen(lon, -90, w, h);
+                    ctx.strokeStyle = lon === 0 ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.05)';
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+                for (let lat = -60; lat <= 60; lat += 30) {
+                    const p1 = geoToScreen(-180, lat, w, h);
+                    const p2 = geoToScreen(180, lat, w, h);
+                    ctx.strokeStyle = lat === 0 ? 'rgba(56, 189, 248, 0.22)' : 'rgba(255,255,255,0.05)';
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+
+                // Draw Architectural Continental Vector Polygons
+                CONTINENT_POLYGONS.forEach(poly => {
+                    ctx.beginPath();
+                    poly.forEach(([lon, lat], idx) => {
+                        const pt = geoToScreen(lon, lat, w, h);
+                        if (idx === 0) ctx.moveTo(pt.x, pt.y);
+                        else ctx.lineTo(pt.x, pt.y);
+                    });
+                    ctx.closePath();
+                    ctx.fillStyle = '#11151F';
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                });
+
+                // Draw Analog Site Markers & Precision Reticles
+                ANALOG_SITES.forEach(site => {
+                    const pos = geoToScreen(site.lon, site.lat, w, h);
+                    const isActive = site.id === activeSiteId;
+                    const color = site.targetCategory === 'MARS' ? '#FF4F1F' : '#38BDF8';
+
+                    if (isActive) {
+                        // Full-viewport alignment crosshair hairlines
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+                        ctx.lineWidth = 1;
+                        ctx.setLineDash([4, 4]);
+                        ctx.beginPath();
+                        ctx.moveTo(pos.x, 0);
+                        ctx.lineTo(pos.x, h);
+                        ctx.moveTo(0, pos.y);
+                        ctx.lineTo(w, pos.y);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        // Expanding pulse ring
+                        const pulseR = 8 + canvasState.pulsePhase * 22;
+                        ctx.strokeStyle = color;
+                        ctx.globalAlpha = 1 - canvasState.pulsePhase;
+                        ctx.lineWidth = 1.25;
+                        ctx.beginPath();
+                        ctx.arc(pos.x, pos.y, pulseR, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.globalAlpha = 1;
+
+                        // Corner Bracket Reticle
+                        const b = 13;
+                        const arm = 4;
+                        ctx.strokeStyle = '#F2F4F8';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        // Top-left
+                        ctx.moveTo(pos.x - b, pos.y - b + arm); ctx.lineTo(pos.x - b, pos.y - b); ctx.lineTo(pos.x - b + arm, pos.y - b);
+                        // Top-right
+                        ctx.moveTo(pos.x + b - arm, pos.y - b); ctx.lineTo(pos.x + b, pos.y - b); ctx.lineTo(pos.x + b, pos.y - b + arm);
+                        // Bottom-left
+                        ctx.moveTo(pos.x - b, pos.y + b - arm); ctx.lineTo(pos.x - b, pos.y + b); ctx.lineTo(pos.x - b + arm, pos.y + b);
+                        // Bottom-right
+                        ctx.moveTo(pos.x + b - arm, pos.y + b); ctx.lineTo(pos.x + b, pos.y + b); ctx.lineTo(pos.x + b, pos.y + b - arm);
+                        ctx.stroke();
+                    }
+
+                    // Center Square Fiducial Marker
+                    ctx.fillStyle = color;
+                    ctx.fillRect(pos.x - 4, pos.y - 4, 8, 8);
+                    ctx.strokeStyle = '#080A0F';
+                    ctx.lineWidth = 1.5;
+                    ctx.strokeRect(pos.x - 4, pos.y - 4, 8, 8);
+
+                    // Crisp Technical Label Tag
+                    const tagText = `${site.index} // ${site.shortName}`;
+                    ctx.font = isActive ? '600 10px "JetBrains Mono", monospace' : '400 10px "JetBrains Mono", monospace';
+                    const textWidth = ctx.measureText(tagText).width;
+                    const tagX = pos.x + 12;
+                    const tagY = pos.y - 9;
+
+                    ctx.fillStyle = 'rgba(8, 10, 15, 0.9)';
+                    ctx.fillRect(tagX, tagY, textWidth + 10, 18);
+                    ctx.strokeStyle = isActive ? color : 'rgba(255,255,255,0.14)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(tagX, tagY, textWidth + 10, 18);
+
+                    ctx.fillStyle = isActive ? '#F2F4F8' : '#8A94A6';
+                    ctx.fillText(tagText, tagX + 5, tagY + 12);
+                });
+
+                requestAnimationFrame(renderFrame);
+            }
+
+            requestAnimationFrame(renderFrame);
+        }
+
+        function focusActiveSite() {
+            const site = ANALOG_SITES.find(s => s.id === activeSiteId);
+            if (!site) return;
+            canvasState.targetZoom = 1.45;
+            canvasState.targetLon = site.lon * 0.45;
+            canvasState.targetLat = site.lat * 0.45;
+        }
+
+        function resetMapProjection() {
+            canvasState.targetZoom = 1;
+            canvasState.targetLon = 0;
+            canvasState.targetLat = 0;
+        }
+
+        // 7. VIEW & TAB NAVIGATION CONTROLLERS
+        function switchMainView(viewName) {
+            ['atlas', 'matrix', 'simulator'].forEach(v => {
+                const section = document.getElementById(`view-${v}`);
+                const deskBtn = document.getElementById(`nav-${v}`);
+                const mobBtn = document.getElementById(`mob-${v}`);
+
+                if (v === viewName) {
+                    section.classList.remove('hidden');
+                    if (v === 'atlas') section.classList.add('flex');
+                    deskBtn.className = 'view-tab px-3 py-1 text-[11px] font-mono uppercase tracking-wider transition-colors bg-white text-obsidian font-semibold';
+                    mobBtn.className = 'flex-1 py-1 text-[10px] font-mono uppercase tracking-wider bg-white text-obsidian font-semibold';
+                } else {
+                    section.classList.add('hidden');
+                    if (v === 'atlas') section.classList.remove('flex');
+                    deskBtn.className = 'view-tab px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-muted hover:text-ink transition-colors';
+                    mobBtn.className = 'flex-1 py-1 text-[10px] font-mono uppercase tracking-wider text-muted';
+                }
+            });
+        }
+
+        function switchInspectorTab(tabName) {
+            const telPanel = document.getElementById('inspector-telemetry');
+            const matPanel = document.getElementById('inspector-matcher');
+            const telTab = document.getElementById('tab-telemetry');
+            const matTab = document.getElementById('tab-matcher');
+
+            if (tabName === 'telemetry') {
+                telPanel.classList.remove('hidden');
+                matPanel.classList.add('hidden');
+                telTab.className = 'py-3 px-3 text-[11px] font-mono uppercase tracking-wider border-b-2 border-white text-ink font-semibold transition-colors cursor-pointer';
+                matTab.className = 'py-3 px-3 text-[11px] font-mono uppercase tracking-wider border-b-2 border-transparent text-muted hover:text-ink transition-colors cursor-pointer';
+            } else {
+                telPanel.classList.add('hidden');
+                matPanel.classList.remove('hidden');
+                matTab.className = 'py-3 px-3 text-[11px] font-mono uppercase tracking-wider border-b-2 border-white text-ink font-semibold transition-colors cursor-pointer';
+                telTab.className = 'py-3 px-3 text-[11px] font-mono uppercase tracking-wider border-b-2 border-transparent text-muted hover:text-ink transition-colors cursor-pointer';
+            }
+        }
+
+        function launchScenarioInAtlas(siteId, presetKey) {
+            switchMainView('atlas');
+            selectSite(siteId, true);
+            applyPreset(presetKey);
+            switchInspectorTab('matcher');
+        }
+
+        function renderMatrixTable() {
+            const tbody = document.getElementById('matrix-table-body');
+            tbody.innerHTML = ANALOG_SITES.map(site => `
+                <tr class="hover:bg-white/[0.03] transition-colors cursor-pointer" onclick="switchMainView('atlas'); selectSite('${site.id}', true);">
+                    <td class="p-3.5 text-ink font-semibold">${site.index} // ${site.name}</td>
+                    <td class="p-3.5 ${site.targetCategory === 'MARS' ? 'text-mars' : 'text-lunar'}">${site.targetBadge}</td>
+                    <td class="p-3.5 text-muted">${site.coordLabel}</td>
+                    <td class="p-3.5 text-ink">${site.elevation}</td>
+                    <td class="p-3.5 text-ink">${site.earthStats.temp}</td>
+                    <td class="p-3.5 text-muted">${site.simulantClass}</td>
+                    <td class="p-3.5 text-right text-ink font-bold">${site.similarity.toFixed(1)}%</td>
+                </tr>
+            `).join('');
+        }
+
+        function toggleDataDrawer(open) {
+            const drawer = document.getElementById('data-drawer');
+            const backdrop = document.getElementById('data-drawer-backdrop');
+            if (open) {
+                backdrop.classList.remove('hidden');
+                drawer.classList.remove('translate-x-full');
+            } else {
+                backdrop.classList.add('hidden');
+                drawer.classList.add('translate-x-full');
+            }
+        }
+    </script>
+</body>
+</html>
